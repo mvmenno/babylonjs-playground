@@ -8,6 +8,8 @@ export class Game {
     private _camera: BABYLON.FollowCamera;
     private _light: BABYLON.Light;
     private _sphere: BABYLON.Mesh;
+    private _sphereParticle: BABYLON.GPUParticleSystem;
+    private _sphereParticleMesh : BABYLON.Mesh
     private _ground: BABYLON.Mesh;
     private anim_reversed : boolean;
     private inputMap : ['w','a','s','d'];
@@ -62,6 +64,8 @@ export class Game {
         // Our built-in 'sphere' shape. Params: name, subdivs, size, scene
         this._sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, this._scene);
         
+        
+        this.createParticleSystem();
         this._camera.lockedTarget = this._sphere;
         
         var mat = new BABYLON.StandardMaterial("material", this._scene);
@@ -105,8 +109,6 @@ export class Game {
         this._scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function (evt) {								
         }));
         
-        
-        
         this._scene.onBeforeRenderObservable.add(() => {
             if(inputMap["w"] || inputMap["ArrowUp"]){
                 console.log('W!');
@@ -137,6 +139,24 @@ export class Game {
             }
         });
     }
+    createParticleSystem() :void{
+        var fountain = BABYLON.Mesh.CreateBox("foutain", 0.1, this._scene);
+        fountain.visibility = 0.1;
+        this._sphereParticleMesh = fountain;       
+        var particleSystem = new BABYLON.GPUParticleSystem("particles",{capacity : 10000},this._scene);
+        particleSystem.emitRate = 1000;
+        particleSystem.particleEmitterType = new BABYLON.SphereParticleEmitter(1);
+        particleSystem.particleTexture = new BABYLON.Texture("/textures/flare.png", this._scene);
+        particleSystem.maxLifeTime = 2;
+        particleSystem.minSize = 0.01;
+        particleSystem.maxSize = 0.4;
+        particleSystem.emitter = fountain;
+        particleSystem.start();
+        
+        this._sphereParticle = particleSystem;
+    }
+    
+    
     playerController(position) : void{
         let speed = 0.005;
         
@@ -193,7 +213,6 @@ export class Game {
     
     update(): void{
         
-        
         let deltaTime = this._engine.getDeltaTime();
         let speed = 0.001;
         let drag = 0.01;
@@ -208,7 +227,7 @@ export class Game {
         
         this.direction.x = this.direction.x / (1 + drag);
         this.direction.z = this.direction.z / (1 + drag);
-        
+        this._sphereParticleMesh.position = this._sphere.position;
         
         
         let speed_jump = 0.2;
