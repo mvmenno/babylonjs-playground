@@ -17,15 +17,18 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
-      template: 'src/index.ejs'
+      template: './src/index.ejs',
     }),
-   /* new CopyWebpackPlugin([
-      { from: 'src/assets', to: 'assets' },
-    ]) */
+    new CopyWebpackPlugin([
+      { from: './src/assets', to: './assets' },
+    ])
   ],
   devtool: 'inline-source-map',
   devServer: {
-    contentBase: distFolder
+   // contentBase: './assets',
+    publicPath: './assets/',
+    contentBase: path.join(__dirname, './src/assets'),
+    watchContentBase: true
   },
   module: {
     rules: [

@@ -11,7 +11,7 @@ export class Base{
     protected anim_reversed : boolean;
     protected inputMap;
     protected direction : BABYLON.Vector3;
-    protected worldsize : Array<number> = [40,40];
+    protected worldsize : Array<number> = [200,200];
     protected isJumping : boolean = false;
     protected maxBoostFrames : number = 50;
     protected currentBoostFrame : number = 1;

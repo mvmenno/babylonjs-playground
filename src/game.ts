@@ -10,6 +10,9 @@ export class Game extends Base{
     protected _player;
     
     protected _walls;
+    protected _boxGroup;
+    protected _boxGroupChilds;
+    protected _velocity: BABYLON.Vector3 = new BABYLON.Vector3(0,0,0);
      
     constructor() {
         super();
@@ -37,7 +40,65 @@ export class Game extends Base{
         box.scaling = new BABYLON.Vector3(5,5,5);
         box.checkCollisions = true;
         
+        var boxGroup = BABYLON.Mesh.CreateBox("boxGroup", 2, this._scene);
+    //    boxGroup.visibility = 0;
+        boxGroup.position = new BABYLON.Vector3(-15,15,0);
+        
+        var box1 = BABYLON.Mesh.CreateBox("boxGroup1", 1, this._scene);
+        box1.scaling.x = 20;
+        box1.scaling.z = 10;
+        box1.position = new BABYLON.Vector3(10,0,0);
+        box1.parent = boxGroup;
+        
+        var box2 = BABYLON.Mesh.CreateBox("boxGroup2", 1, this._scene);
+        box2.scaling.x = 20;
+        box2.scaling.z = 10;
+        box2.position = new BABYLON.Vector3(-10,0,0);
+        box2.parent = boxGroup;
+        box1.checkCollisions = true;
+        
+        box2.checkCollisions = true;
+        
+        this._boxGroupChilds = [box1,box2];
+        
+        
+     boxGroup.rotation = new BABYLON.Vector3(0,0,0);
+        this._boxGroup = boxGroup;
+        
         var wallheight = 5;
+
+
+        var gizmoManager = new BABYLON.GizmoManager(this._scene);
+        
+        gizmoManager.positionGizmoEnabled = true;
+        gizmoManager.rotationGizmoEnabled = true;
+        
+        var coord_mat = new BABYLON.StandardMaterial("material", this._scene);        
+        coord_mat.diffuseColor = new BABYLON.Color3(1,0,0);
+        
+        var coord_x = BABYLON.Mesh.CreateBox("wall", 1, this._scene);
+        coord_x.position.x = 0;
+        coord_x.position.y = 20;
+        coord_x.scaling.x = 10;
+        coord_x.material = coord_mat;
+        
+        var coord_mat = new BABYLON.StandardMaterial("material", this._scene);        
+        coord_mat.diffuseColor = new BABYLON.Color3(0,1,0);
+        
+        var coord_y = BABYLON.Mesh.CreateBox("wall", 1, this._scene);
+        coord_y.position.x = 0;
+        coord_y.position.y = 20;
+        coord_y.scaling.y = 10;
+        coord_y.material = coord_mat;
+        
+        var coord_mat = new BABYLON.StandardMaterial("material", this._scene);        
+        coord_mat.diffuseColor = new BABYLON.Color3(0,0,1);
+        
+        var coord_y = BABYLON.Mesh.CreateBox("wall", 1, this._scene);
+        coord_y.position.x = 0;
+        coord_y.position.y = 20;
+        coord_y.scaling.z = 10;
+        coord_y.material = coord_mat;
         
         
         var wall1 = BABYLON.Mesh.CreateBox("wall", 2, this._scene);
@@ -113,8 +174,15 @@ export class Game extends Base{
         this._walls[1].physicsImpostor = new BABYLON.PhysicsImpostor(this._walls[1], BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.7 }, this._scene);
         this._walls[2].physicsImpostor = new BABYLON.PhysicsImpostor(this._walls[2], BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.7 }, this._scene);
         this._walls[3].physicsImpostor = new BABYLON.PhysicsImpostor(this._walls[3], BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.7 }, this._scene);
+  
+        this._boxGroupChilds[0].physicsImpostor = new BABYLON.PhysicsImpostor(this._boxGroupChilds[0], BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.7 }, this._scene);
+        this._boxGroupChilds[1].physicsImpostor = new BABYLON.PhysicsImpostor(this._boxGroupChilds[1], BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.7 }, this._scene);
+
         
-        
+      //  this._boxGroup.physicsImpostor = new BABYLON.PhysicsImpostor(this._walls[3], BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.7 }, this._scene);
+
+       
+
         /*this._box.physicsImpostor = new BABYLON.PhysicsImpostor(this._ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.7 }, this._scene);
         this._box.physicsImpostor = new BABYLON.PhysicsImpostor(this._ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.7 }, this._scene);
         this._box.physicsImpostor = new BABYLON.PhysicsImpostor(this._ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.7 }, this._scene);
@@ -156,13 +224,12 @@ export class Game extends Base{
         
         this._scene.activeCamera = this._camera;
         this._camera.attachControl(this._canvas);
-        
-        
+   
         this._player = BABYLON.Mesh.CreateBox("player",2,this._scene);
         
         this._player.visibility = 0;
- 
-     //   this._camera.attachControl(this._sphere);
+        
+        this._player.rotation = new BABYLON.Vector3(0,Math.PI / 2,0);
         
         this._light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), this._scene);
         
@@ -172,19 +239,13 @@ export class Game extends Base{
        // this._light.diffuse = new BABYLON.Color3(0.9,0.8,0.8);
 
         // Our built-in 'sphere' shape. Params: name, subdivs, size, scene
-        this._sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, this._scene);
+        this._sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 5, this._scene);
         
         
         
         this.createParticleSystem();
         
-        this._camera.parent = this._player;
         this._camera.lockedTarget = this._player;
-       // this._camera.parent = this._sphere;
-        
-     //   this._camera.lockedTarget.rotation = new BABYLON.Vector3(0,0,0);
-        
-     //   this._camera.rotation  = new BABYLON.Vector3(0,0,0);
         
         var mat = new BABYLON.StandardMaterial("material", this._scene);
         mat.diffuseTexture = new BABYLON.Texture("assets/texture/ball.jpg",this._scene);
@@ -322,14 +383,16 @@ export class Game extends Base{
          //   this.direction.x = this.direction.x + reverseBounceRate;
             return true;
         }
-        if (this._sphere.position.z >= (this.worldsize[1] / 2) + offset){
+        if (this._sphere.position.z >= (this.worldsize[1] / 2 + offset)){
          //   this.direction.z = this.direction.z - reverseBounceRate;
             return true;
-        } else if (this._sphere.position.z <= -(this.worldsize[1] / 2) + offset){
+        } else if (this._sphere.position.z <= -(this.worldsize[1] / 2 + offset)){
          //   this.direction.z = this.direction.z + reverseBounceRate;
             return true;
         }     
-        
+        if (this._sphere.position.y < -100){
+            return true;
+        }
         
         return false;
     }
@@ -405,20 +468,35 @@ export class Game extends Base{
         this.collisionDetection();
         
         let deltaTime = this._engine.getDeltaTime();
-        let speed = 0.001;
+        let speed = 20;
         let drag = 0.01;
         
-        let max_speed = 100;
-        
+        let maxSpeed = 50;
         
         this.direction.x = this.direction.x / (1 + drag);
         this.direction.z = this.direction.z / (1 + drag);
         
+      // this.direction.x =this.direction.x*speed;
+    //   this.direction.z =this.direction.z*speed;
         
+        /*
+        this.direction.x = this.direction.x * deltaTime;
+        this.direction.y = this.direction.y * deltaTime;
+        this.direction.z = this.direction.z * deltaTime;
+        
+        */
+        
+       // this._boxGroup.rotate(new Vector3(0,0,++));
+        var rotateSpeed = 0.001;
+        
+        
+        var rotation = this._boxGroup.rotation;
+        rotation.z += rotateSpeed * deltaTime ;
+        this._boxGroup.rotation = rotation;
         
         this._sphereParticleMesh.position = this._sphere.position;
         
-        
+        this._player.position = this._sphere.position;
         
         this.playerJumpCheck();
         if(this.isOutOfBounds()){
@@ -426,18 +504,47 @@ export class Game extends Base{
             this._sphere.physicsImpostor.resetUpdateFlags();
         }
         
-       var newImpulse =new BABYLON.Vector3(this.direction.x, this.direction.y, this.direction.z);
+        
+        var newImpulseVector =new BABYLON.Vector3(this.direction.x * deltaTime, this.direction.y * deltaTime, this.direction.z * deltaTime);
+       // var sf = 1;
+       // newImpulseVector.scale(sf);
+        newImpulseVector = newImpulseVector.scale(speed);
+        this._velocity = this._velocity.add(newImpulseVector);
+        
+        //console.log(this._velocity.x);
+        
+        var diff_x =  this._velocity.x -newImpulseVector.x;
+       // console.log(diff_x);
+        if(this._velocity.x > maxSpeed){
+       //     newImpulseVector.x -= diff_x;
+         //   this._velocity.x = 0;
+        }else if(this._velocity.x < (-maxSpeed)){
+            //newImpulseVector.x = 0;
+           // this._velocity.x = 0;
+        }
+        if(this._velocity.z > maxSpeed){
+             //newImpulseVector.z = 0;
+           // this._velocity.z = 0;
+        }else if(this._velocity.z < (-maxSpeed)){
+              //newImpulseVector.z = 0;
+           // this._velocity.z = 0;
+        }
       
        var contactLocalRefPoint = BABYLON.Vector3.Zero();
-       var sf = 40;
-        this._sphere.physicsImpostor.applyForce(newImpulse.scale(sf), this._sphere.getAbsolutePosition().add(contactLocalRefPoint));
-        if(this.direction.x > max_speed){
-          this.direction.x = max_speed;
-        }
-        if(this.direction.z > max_speed){
-         this.direction.z = max_speed;
-        }
+       
+       
+       
+        this._sphere.physicsImpostor.applyForce(newImpulseVector, this._sphere.getAbsolutePosition().add(contactLocalRefPoint));
         
+        
+       // this._velocity = newImpulseVector;
+   /*     if(this.direction.x > maxSpeed){
+          this.direction.x = maxSpeed;
+        }
+        if(this.direction.z > maxSpeed){
+         this.direction.z = maxSpeed;
+        }
+        */
         if(this._sphere.position.y > 1.4){
             this.anim_reversed = true;
         }else{
